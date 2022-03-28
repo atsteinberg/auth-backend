@@ -24,21 +24,21 @@ export class AuthService {
       sub: userId,
       email,
     }, {
-      expiresIn: '15min',
+      expiresIn: this.configService.get('JWT_AT_EXPIRATION_OFFSET'),
       secret: this.configService.get('JWT_AT_SECRET'),
     }),
     this.jwtService.signAsync({
       sub: userId,
       email,
     }, {
-      expiresIn: '1week',
+      expiresIn: +this.configService.get('RT_EXPIRATION_OFFSET'),
       secret: this.configService.get('JWT_RT_SECRET'),
     }),
     ]);
 
     return {
-      access_token: accessToken,
-      refresh_token: refreshToken,
+      accessToken,
+      refreshToken,
     };
   }
 
@@ -65,7 +65,7 @@ export class AuthService {
         },
       });
       const tokens = await this.getTokens(newUser.userId, newUser.email);
-      await this.updateRtHash(newUser.userId, tokens.refresh_token);
+      await this.updateRtHash(newUser.userId, tokens.refreshToken);
 
       return tokens;
     } catch (error) {
@@ -91,7 +91,7 @@ export class AuthService {
     }
 
     const tokens = await this.getTokens(user.userId, user.email);
-    await this.updateRtHash(user.userId, tokens.refresh_token);
+    await this.updateRtHash(user.userId, tokens.refreshToken);
 
     return tokens;
   }
@@ -125,7 +125,7 @@ export class AuthService {
       throw new ForbiddenException('access denied');
     }
     const tokens = await this.getTokens(user.userId, user.email);
-    await this.updateRtHash(user.userId, tokens.refresh_token);
+    await this.updateRtHash(user.userId, tokens.refreshToken);
 
     return tokens;
   }
