@@ -51,7 +51,7 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  logout(@UserId() id: number) {
+  logout(@UserId() id: string) {
     return this.authService.logout(id);
   }
 
@@ -60,7 +60,7 @@ export class AuthController {
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refreshTokens(
-    @UserId() id: number,
+    @UserId() id: string,
       @RefreshToken() rt: string,
       @Res({ passthrough: true }) response: Response,
   ): Promise<AccessToken> {
