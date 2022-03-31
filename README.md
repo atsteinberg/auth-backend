@@ -1,11 +1,15 @@
 
 # Description
 
-This is a the backend server for a toy react app that uses jwt auth.
+This is a the backend server for a toy react app that uses jwt auth. The corresponding frontend can be found here: `git@github.com:atsteinberg/auth-frontend.git`
 # Getting Started
 ## Clone from github
 
 Clone the repo:
+
+```bash
+git clone git@github.com:atsteinberg/auth-backend.git
+```
 
 ## Install node
 
