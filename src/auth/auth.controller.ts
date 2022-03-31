@@ -1,5 +1,5 @@
 import {
-  Controller, Body, Post, HttpCode, HttpStatus, Res, UseGuards,
+  Controller, Body, Post, HttpCode, HttpStatus, Res, Get, UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CookieOptions, Response } from 'express';
@@ -14,16 +14,24 @@ import { AccessToken } from './types/tokens.type';
 
 @Controller('auth')
 export class AuthController {
+  cookieOptions: CookieOptions;
+
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
-  ) {}
-
-  cookieOptions: CookieOptions = {
-    httpOnly: true,
-    domain: this.configService.get('CLIENT_DOMAIN') || 'localhost',
-    expires: new Date(Date.now() + (+this.configService.get('RT_EXPIRATION_OFFSET') || 1000 * 60 * 60 * 24)),
-  };
+  ) {
+    this.cookieOptions = {
+      httpOnly: true,
+      expires: new Date(Date.now() + (+this.configService.get('RT_EXPIRATION_OFFSET') || 1000 * 60 * 60 * 24)),
+      secure: true,
+    };
+    if (this.configService.get('COOKIE_DOMAIN')) {
+      this.cookieOptions = {
+        ...this.cookieOptions,
+        domain: this.configService.get('COOKIE_DOMAIN'),
+      };
+    }
+  }
 
   @NoAtRequired()
   @Post('local/signup')
@@ -57,7 +65,7 @@ export class AuthController {
 
   @NoAtRequired()
   @UseGuards(JwtRtGuard)
-  @Post('refresh')
+  @Get('refresh')
   @HttpCode(HttpStatus.OK)
   async refreshTokens(
     @UserId() id: string,
