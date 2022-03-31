@@ -11,6 +11,7 @@ export class CustomersController {
 
   @Post()
   create(@Body() createCustomerDto: CreateCustomerDto) {
+    // to be used later. Included for reference only
     return this.customersService.create(createCustomerDto);
   }
 
@@ -26,11 +27,13 @@ export class CustomersController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCustomerDto: UpdateCustomerDto) {
+    // to be used later. Included for reference only
     return this.customersService.update(+id, updateCustomerDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
+    // to be used later. Included for reference only
     return this.customersService.remove(+id);
   }
 }

@@ -11,6 +11,7 @@ export class CustomersService {
   ) {}
 
   create(createCustomerDto: CreateCustomerDto) {
+    // to be used later. Included for reference only
     return 'This action adds a new customer';
   }
 
@@ -28,10 +29,12 @@ export class CustomersService {
   }
 
   update(id: number, updateCustomerDto: UpdateCustomerDto) {
+    // to be used later. Included for reference only
     return `This action updates a #${id} customer`;
   }
 
   remove(id: number) {
+    // to be used later. Included for reference only
     return `This action removes a #${id} customer`;
   }
 }
