@@ -23,7 +23,7 @@ export class AuthController {
     this.cookieOptions = {
       httpOnly: true,
       expires: new Date(Date.now() + (+this.configService.get('RT_EXPIRATION_OFFSET') || 1000 * 60 * 60 * 24)),
-      secure: true,
+      secure: false,
     };
     if (this.configService.get('COOKIE_DOMAIN')) {
       this.cookieOptions = {
