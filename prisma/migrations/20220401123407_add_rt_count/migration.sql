@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "rtCount" INTEGER NOT NULL DEFAULT 0;

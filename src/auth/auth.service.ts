@@ -19,7 +19,7 @@ export class AuthService {
     return hash(data, 10);
   }
 
-  async getTokens(userId: string, email: string) {
+  async getTokens(userId: string, email: string, version: number) {
     const [accessToken, refreshToken] = await Promise.all([this.jwtService.signAsync({
       sub: userId,
       email,
@@ -28,6 +28,7 @@ export class AuthService {
       secret: this.configService.get('JWT_AT_SECRET'),
     }),
     this.jwtService.signAsync({
+      version,
       sub: userId,
       email,
     }, {
@@ -42,16 +43,31 @@ export class AuthService {
     };
   }
 
-  async updateRtHash(userId: string, rt: string) {
+  async updateRtHash(userId: string, rt: string, oldRt?: string) {
     const hashedRt = await this.hashData(rt);
-    await this.prismaService.user.update({
-      where: {
-        userId,
-      },
-      data: {
-        hashedRt,
-      },
-    });
+    if (oldRt !== undefined) {
+      await this.prismaService.user.update({
+        where: {
+          userId,
+        },
+        data: {
+          hashedRt,
+          oldRts: {
+            push: oldRt,
+          },
+        },
+      });
+    } else {
+      await this.prismaService.user.update({
+        where: {
+          userId,
+        },
+        data: {
+          hashedRt,
+          oldRts: [],
+        },
+      });
+    }
   }
 
   async signupLocal(dto: SignupDto): Promise<Tokens> {
@@ -62,9 +78,10 @@ export class AuthService {
           userName: dto.userName,
           email: dto.email,
           hashedPassword,
+          oldRts: [],
         },
       });
-      const tokens = await this.getTokens(newUser.userId, newUser.email);
+      const tokens = await this.getTokens(newUser.userId, newUser.email, 0);
       await this.updateRtHash(newUser.userId, tokens.refreshToken);
 
       return tokens;
@@ -90,7 +107,7 @@ export class AuthService {
       throw new ForbiddenException('no user with that email and password found');
     }
 
-    const tokens = await this.getTokens(user.userId, user.email);
+    const tokens = await this.getTokens(user.userId, user.email, user.oldRts.length);
     await this.updateRtHash(user.userId, tokens.refreshToken);
 
     return tokens;
@@ -106,6 +123,7 @@ export class AuthService {
       },
       data: {
         hashedRt: null,
+        oldRts: [],
       },
     });
   }
@@ -122,10 +140,22 @@ export class AuthService {
 
     const rtsMatch = await compare(rt, user.hashedRt);
     if (!rtsMatch) {
+      const matchesOldRt = await Promise.all(user.oldRts.map((oldRt) => compare(rt, oldRt)));
+      if (matchesOldRt.some((match) => match === true)) {
+        await this.prismaService.user.update({
+          where: {
+            userId: user.userId,
+          },
+          data: {
+            hashedRt: null,
+            oldRts: [],
+          },
+        });
+      }
       throw new ForbiddenException('access denied');
     }
-    const tokens = await this.getTokens(user.userId, user.email);
-    await this.updateRtHash(user.userId, tokens.refreshToken);
+    const tokens = await this.getTokens(user.userId, user.email, user.oldRts.length);
+    await this.updateRtHash(user.userId, tokens.refreshToken, user.hashedRt);
 
     return tokens;
   }

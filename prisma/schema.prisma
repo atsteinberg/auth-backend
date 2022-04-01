@@ -16,10 +16,10 @@ model User {
   updatedAt DateTime @updatedAt
 
   userName       String
-  email          String  @unique
+  email          String   @unique
   hashedPassword String
   hashedRt       String?
-
+  oldRts         String[]
 }
 
 model Customer {
